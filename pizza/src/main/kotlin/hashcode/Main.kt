@@ -1,6 +1,6 @@
 package hashcode
 
-const val path = "/Users/naortedgi/Desktop/pizza/src/main/kotlin/resources"
+const val path = "/Users/naortedgi/Desktop/Google-HashCode-Pizza-Problem/pizza/src/main/kotlin/resources"
 
 enum class INPUT(val PATH: String) {
     EXAMPLE("$path/a_example.in"),
@@ -13,6 +13,7 @@ enum class INPUT(val PATH: String) {
 fun main(args: Array<String>) {
     val input = INPUT.EXAMPLE.PATH
     val pizza = PizzaGenerator.create(input)
-    val slices =Slicer.slice(pizza)
+    val slices = Slicer.slice(pizza)
+
 }
 
