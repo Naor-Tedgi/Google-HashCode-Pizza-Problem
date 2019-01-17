@@ -1,13 +1,13 @@
 package hashcode
 
 import java.lang.Math.ceil
-import kotlin.math.min
+import java.lang.Math.min
 
 
 data class Ingredient(val tCnt: Int, val mCnt: Int, val sCnt: Int)
 
-
-data class rectangle(private val str: String) {
+data class RectangleSelected(val rectangle: Rectangle, val tomatoCnt: Int, val mushroomCat: Int, val sliceSize: Int)
+data class Rectangle(private val str: String) {
     val rows: Int
     val column: Int
 
@@ -22,14 +22,88 @@ class Slicer {
     companion object {
         fun slice(pizza: Pizza) {
             val (config, plate) = pizza
-            val (rows, colums, minIngredient, maxCellsPerSlice) = config
+            val (rows, column, minIngredient, maxCellsPerSlice) = config
             val (tCnt, mCnt, sCnt) = countIngredient(plate)
-            val minCellsToSolve = ceil(colums * rows / maxCellsPerSlice.toDouble())
-            val minTopins = min(tCnt, mCnt)
-            val possibleRectengales = generatePossibleRectangle(minIngredient, maxCellsPerSlice, rows, colums)
-//            solve(pizza, 0, 0, maxCellsPerSlice, minIngredient, possibleRectengales)
+            val minCellsToSolve = ceil(column * rows / maxCellsPerSlice.toDouble())
+            val minTaping = min(tCnt, mCnt)
+            minCellsToSolve + minTaping + sCnt
+            val possibleRectangles = generatePossibleRectangle(minIngredient, maxCellsPerSlice, rows, column)
+            solve(pizza, 2, 2, possibleRectangles, config)
 
             //maxCellsPerSlice Higher and Minimum
+        }
+
+        private fun solve(pizza: Pizza, i: Int, j: Int, possibleRectangles: List<Rectangle>, config: PizzaConfig) {
+            val validSlicesBySize =
+                getAllValidSlicesFromCurrentPointByPizzaPlateSize(i, j, possibleRectangles, config)
+            val validSlicesNotContainingSelected =
+                getAllValidSlicesNotContainingSelected(pizza, i, j, validSlicesBySize)
+            val validSlicesContainingMinTaping =
+                getAllValidSlicesContainingMinTaping(
+                    pizza,
+                    i,
+                    j,
+                    config.minIngredient,
+                    validSlicesNotContainingSelected
+                )
+            validSlicesContainingMinTaping.trimToSize()
+
+        }
+
+        private fun getAllValidSlicesContainingMinTaping(
+            pizza: Pizza,
+            i: Int,
+            j: Int,
+            minIngredient: Int,
+            validSlicesNotContainingSelected: ArrayList<Rectangle>
+        ): ArrayList<RectangleSelected> {
+
+            val result = ArrayList<RectangleSelected>()
+
+            validSlicesNotContainingSelected.forEach { rec ->
+                var tCnt = 0
+                var mCnt = 0
+                for (iInd in 0 until rec.rows)
+                    for (jInd in 0 until rec.column)
+                        when (pizza.plate[i + iInd][j + jInd]) {
+                            PARTS.TOMATO -> tCnt++
+                            PARTS.MUSHROOM -> mCnt++
+                            else -> {
+
+                            }
+                        }
+                if (tCnt > minIngredient && mCnt > minIngredient) {
+                    result.add(RectangleSelected(rec, tCnt, mCnt, rec.rows * rec.column))
+                }
+
+
+            }
+            return result
+
+        }
+
+
+        private fun getAllValidSlicesNotContainingSelected(
+            pizza: Pizza,
+            i: Int,
+            j: Int,
+            validSlicesBySize: ArrayList<Rectangle>
+        ): ArrayList<Rectangle> {
+            val result = ArrayList<Rectangle>()
+            validSlicesBySize.forEach { rec ->
+                var insert = true
+                for (iInd in 0 until rec.rows)
+                    for (jInd in 0 until rec.column)
+                        if (pizza.plate[i + iInd][j + jInd] == PARTS.SELECTED) {
+                            insert = false
+                            break
+                        }
+
+                if (insert) result.add(rec)
+
+            }
+            return result
+
         }
 
         private fun generatePossibleRectangle(
@@ -37,7 +111,7 @@ class Slicer {
             maxCellsPerSlice: Int,
             rows: Int,
             column: Int
-        ): List<rectangle> {
+        ): List<Rectangle> {
             val result = HashSet<String>()
             for (i in minIngredient..maxCellsPerSlice)
                 for (j in 1..i) {
@@ -46,22 +120,26 @@ class Slicer {
                     result.add(rectangle)
                     result.add(rectangle.reversed())
                 }
-
-            var rectangles = result.map { it -> rectangle(it) }
-            return rectangles.filter { it.rows <= rows && it.column <= column }
+            return result.map { it -> Rectangle(it) }
+                .filter { it.rows <= rows && it.column <= column }
         }
 
 
-        private fun solve(
-            pizza: Pizza,
+        private fun getAllValidSlicesFromCurrentPointByPizzaPlateSize(
             i: Int,
-            i1: Int,
-            maxCellsPerSlice: Int,
-            minIngredient: Int,
-            possibleRectengales: HashSet<String>
-        ) {
+            j: Int,
+            possibleRectangles: List<Rectangle>,
+            config: PizzaConfig
+        ): ArrayList<Rectangle> {
+            val result = ArrayList<Rectangle>()
 
+            possibleRectangles.forEach {
+                if (i + it.rows <= config.rows && j + it.column <= config.colums)
+                    result.add(it)
 
+            }
+
+            return result
         }
 
 
