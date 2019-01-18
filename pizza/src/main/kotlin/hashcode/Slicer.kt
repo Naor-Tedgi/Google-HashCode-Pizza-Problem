@@ -1,12 +1,13 @@
 package hashcode
 
+import java.lang.Exception
 import java.lang.Math.ceil
 import java.lang.Math.min
 
 
 data class Ingredient(val tCnt: Int, val mCnt: Int, val sCnt: Int)
 data class Point(val x: Int, val y: Int)
-data class RectangleSelected(val rectangle: Rectangle, val tomatoCnt: Int, val mushroomCat: Int, val sliceSize: Int)
+data class RectangleSelected(val rectangle: Rectangle, val tomatoCnt: Int, val mushroomCnt: Int, val sliceSize: Int)
 data class Rectangle(private val str: String) {
     val down: Int
     val right: Int
@@ -55,9 +56,14 @@ class Slicer {
 
         private fun solve(pizza: Pizza, i: Int, j: Int, possibleRectangles: List<Rectangle>, config: PizzaConfig) {
             val validSlices = getAllValidSlicesFromCurrentPoint(pizza, i, j, possibleRectangles, config)
-            println(validSlices)
+            val selectBestSlice  = selectBestSlice(validSlices)
 
+        }
 
+        private fun selectBestSlice(validSlices: ArrayList<RectangleSelected>):RectangleSelected  {
+//            val bigSlice = validSlices.map { it.sliceSize }.max()
+//            val minMashroom  = validSlices.map { it.mushroomCnt }.min()
+//            return bigSlice!!
         }
 
         private fun getAllValidSlicesContainingMinTaping(
@@ -78,18 +84,18 @@ class Slicer {
                     when (pizza.plate[it.x][it.y]) {
                         PARTS.TOMATO -> tCnt++
                         PARTS.MUSHROOM -> mCnt++
-                        else -> {
-                        }
+                        PARTS.SELECTED -> throw Exception("all selected should be deleted before this step")
                     }
-                    if (tCnt > minIngredient && mCnt > minIngredient) {
-                        result.add(RectangleSelected(rec, tCnt, mCnt, rec.down * rec.right))
-                    }
+
+                }
+                if (tCnt >= minIngredient && mCnt >= minIngredient) {
+                    result.add(RectangleSelected(rec, tCnt, mCnt, tCnt+mCnt))
                 }
             }
             return result
         }
 
-        public fun getCordinatesInsideRectangle(i: Int, j: Int, down: Int, right: Int): ArrayList<Point> {
+         fun getCordinatesInsideRectangle(i: Int, j: Int, down: Int, right: Int): ArrayList<Point> {
             val result = ArrayList<Point>()
             for (indexDown in 0..down)
                 for (indexRight in 0..right)
@@ -149,7 +155,7 @@ class Slicer {
             val result = ArrayList<Rectangle>()
 
             possibleRectangles.forEach {
-                if (i + it.down <= config.rows && j + it.right <= config.colums)
+                if (i + it.down <config.rows && j + it.right < config.colums)
                     result.add(it)
 
             }
