@@ -56,14 +56,15 @@ class Slicer {
 
         private fun solve(pizza: Pizza, i: Int, j: Int, possibleRectangles: List<Rectangle>, config: PizzaConfig) {
             val validSlices = getAllValidSlicesFromCurrentPoint(pizza, i, j, possibleRectangles, config)
-            val selectBestSlice  = selectBestSlice(validSlices)
+            val selectBestSlice = selectBestSlice(validSlices)
 
         }
 
-        private fun selectBestSlice(validSlices: ArrayList<RectangleSelected>):RectangleSelected  {
+        private fun selectBestSlice(validSlices: ArrayList<RectangleSelected>): RectangleSelected {
 //            val bigSlice = validSlices.map { it.sliceSize }.max()
 //            val minMashroom  = validSlices.map { it.mushroomCnt }.min()
 //            return bigSlice!!
+            TODO("START CREATING A TREE FROM HERE AND RECURSIVELY RUN SOLVE ON EACH NODE ")
         }
 
         private fun getAllValidSlicesContainingMinTaping(
@@ -77,7 +78,7 @@ class Slicer {
             validSlicesNotContainingSelected.forEach { rec ->
                 var tCnt = 0
                 var mCnt = 0
-                val coordinatesInsideRectangle = getCordinatesInsideRectangle(i, j, rec.down, rec.right)
+                val coordinatesInsideRectangle = getCoordinatesInsideRectangle(i, j, rec.down, rec.right)
 
                 coordinatesInsideRectangle.forEach {
 
@@ -89,13 +90,13 @@ class Slicer {
 
                 }
                 if (tCnt >= minIngredient && mCnt >= minIngredient) {
-                    result.add(RectangleSelected(rec, tCnt, mCnt, tCnt+mCnt))
+                    result.add(RectangleSelected(rec, tCnt, mCnt, tCnt + mCnt))
                 }
             }
             return result
         }
 
-         fun getCordinatesInsideRectangle(i: Int, j: Int, down: Int, right: Int): ArrayList<Point> {
+        fun getCoordinatesInsideRectangle(i: Int, j: Int, down: Int, right: Int): ArrayList<Point> {
             val result = ArrayList<Point>()
             for (indexDown in 0..down)
                 for (indexRight in 0..right)
@@ -155,7 +156,7 @@ class Slicer {
             val result = ArrayList<Rectangle>()
 
             possibleRectangles.forEach {
-                if (i + it.down <config.rows && j + it.right < config.colums)
+                if (i + it.down < config.rows && j + it.right < config.colums)
                     result.add(it)
 
             }

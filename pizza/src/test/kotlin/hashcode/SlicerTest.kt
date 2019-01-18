@@ -7,7 +7,7 @@ class SlicerTest {
 
 
     fun tester(startX: Int, startY: Int, down: Int, right: Int, expectedResult: ArrayList<Point>) {
-        val points = Slicer.getCordinatesInsideRectangle(startX, startY, down, right)
+        val points = Slicer.getCoordinatesInsideRectangle(startX, startY, down, right)
         assertTrue(expectedResult.size == points.size)
         expectedResult.forEach { expPoint ->
             assertTrue(points.any { it.x == expPoint.x && it.y == expPoint.y })
