@@ -1,5 +1,9 @@
 package hashcode
 
+import astar.AStar
+import astar.IGoalNode
+import astar.ISearchNode
+
 
 lateinit var path: String
 
@@ -15,9 +19,36 @@ fun main(args: Array<String>) {
     path = getResourcesDir()
     val input = INPUT.EXAMPLE.PATH
     val pizza = PizzaGenerator.create(input)
-    val slices = Slicer.slice(pizza)
+    val pizzaGoal = pizza.copy()
+    pizzaGoal.toEmptyPizza()
+    val stratPoint = PizzaSliccerSearchNode(pizza, Point(0, 0), null)
+    val steps = AStar().shortestPath(stratPoint, PizzaSliccerGoalNode(pizzaGoal))
+    val result = steps.map { it as PizzaSliccerSearchNode }
+    result.forEach {
+        printPizza(it.pizza)
+        println("---------")
+    }
 
 }
 
-private fun getResourcesDir() = arrayListOf<String>(System.getProperty("user.dir"), "src", "main", "kotlin", "resources").joinToString("/")
+fun printPizza(pizza: Pizza) {
+    pizza.plate.forEach {
+        it.forEach {
+            when (it) {
+                PARTS.TOMATO -> print("T")
+                PARTS.MUSHROOM -> print("M")
+                PARTS.SELECTED -> print("S")
+            }
+        }
+        println()
+    }
+
+}
+
+
+private fun getResourcesDir() =
+    arrayListOf<String>(System.getProperty("user.dir"), "src", "main", "kotlin", "resources").joinToString("/")
+
+
+
 

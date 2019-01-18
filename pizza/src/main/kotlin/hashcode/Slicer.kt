@@ -21,50 +21,61 @@ data class Rectangle(private val str: String) {
 
 class Slicer {
     companion object {
-        fun slice(pizza: Pizza) {
+
+        fun slice(pizza: Pizza, src: Point): ArrayList<PizzaSliccerSearchNode> {
             val (config, plate) = pizza
             val (rows, column, minIngredient, maxCellsPerSlice) = config
             val (tCnt, mCnt, sCnt) = countIngredient(plate)
             val minCellsToSolve = ceil(column * rows / maxCellsPerSlice.toDouble())
             val minTaping = min(tCnt, mCnt)
+            if (minTaping == 0) return ArrayList<PizzaSliccerSearchNode>()
             minCellsToSolve + minTaping + sCnt
             val possibleRectangles = generatePossibleRectangle(minIngredient, maxCellsPerSlice, rows, column)
-            solve(pizza, 0, 0, possibleRectangles, config)
-
-            //maxCellsPerSlice Higher and Minimum
+            println("${src.x},${src.y}")
+            return solve(pizza, src.x, src.y, possibleRectangles, config)
         }
 
 
-        private fun getAllValidSlicesFromCurrentPoint(
+        private fun solve(
             pizza: Pizza,
             i: Int,
             j: Int,
             possibleRectangles: List<Rectangle>,
             config: PizzaConfig
-        ): ArrayList<RectangleSelected> {
-            val validSlicesBySize = getAllValidSlicesByPizzaPlateSize(i, j, possibleRectangles, config)
-            val validSlicesNotContainingSelected =
-                getAllValidSlicesNotContainingSelected(pizza, i, j, validSlicesBySize)
-            return getAllValidSlicesContainingMinTaping(
-                pizza,
-                i,
-                j,
-                config.minIngredient,
-                validSlicesNotContainingSelected
-            )
+        ): ArrayList<PizzaSliccerSearchNode> {
+            val res = getAllValidSlicesFromCurrentPoint(pizza, i, j, possibleRectangles, config)
+            val results = ArrayList<PizzaSliccerSearchNode>()
+            res.forEach {
+                val newPizza = pizza.copy()
+                newPizza.markSlice(it.rectangle, i, j)
+                val newChild = PizzaSliccerSearchNode(newPizza, getNextPoint(pizza, i, j, it.rectangle))
+                newChild.setG(it.sliceSize.toDouble())
+                results.add(newChild)
+            }
+            return results
         }
 
-        private fun solve(pizza: Pizza, i: Int, j: Int, possibleRectangles: List<Rectangle>, config: PizzaConfig) {
-            val validSlices = getAllValidSlicesFromCurrentPoint(pizza, i, j, possibleRectangles, config)
-            val selectBestSlice = selectBestSlice(validSlices)
+        private fun getNextPoint(pizza: Pizza, i: Int, j: Int, rectangle: Rectangle): Point {
+            if (j + rectangle.right + 1 < pizza.config.column) return Point(i, j + rectangle.right + 1)
+            pizza.plate.forEachIndexed { ind, row ->
+                if (ind > i) {
+                    row.forEachIndexed { rowInd, value ->
+                        if (value != PARTS.SELECTED) return Point(ind, rowInd)
+                    }
+                }
+
+            }
+            return Point(pizza.config.rows - 1, pizza.config.column - 1)
 
         }
 
-        private fun selectBestSlice(validSlices: ArrayList<RectangleSelected>): RectangleSelected {
-//            val bigSlice = validSlices.map { it.sliceSize }.max()
-//            val minMashroom  = validSlices.map { it.mushroomCnt }.min()
-//            return bigSlice!!
-            TODO("START CREATING A TREE FROM HERE AND RECURSIVELY RUN SOLVE ON EACH NODE ")
+
+        @Deprecated("remove this logic from slicer to solver")
+        private fun selectBestSlice(validSlices: ArrayList<RectangleSelected>): Int? {
+            val bigSlice = validSlices.map { it.sliceSize }.max()
+            val minMashroom = validSlices.map { it.mushroomCnt }.min()
+
+            return bigSlice
         }
 
         private fun getAllValidSlicesContainingMinTaping(
@@ -88,6 +99,7 @@ class Slicer {
                         PARTS.SELECTED -> throw Exception("all selected should be deleted before this step")
                     }
 
+
                 }
                 if (tCnt >= minIngredient && mCnt >= minIngredient) {
                     result.add(RectangleSelected(rec, tCnt, mCnt, tCnt + mCnt))
@@ -96,7 +108,7 @@ class Slicer {
             return result
         }
 
-        fun getCoordinatesInsideRectangle(i: Int, j: Int, down: Int, right: Int): ArrayList<Point> {
+        internal fun getCoordinatesInsideRectangle(i: Int, j: Int, down: Int, right: Int): ArrayList<Point> {
             val result = ArrayList<Point>()
             for (indexDown in 0..down)
                 for (indexRight in 0..right)
@@ -114,8 +126,8 @@ class Slicer {
             val result = ArrayList<Rectangle>()
             validSlicesBySize.forEach { rec ->
                 var insert = true
-                for (iInd in 0 until rec.down)
-                    for (jInd in 0 until rec.right)
+                for (iInd in 0..rec.down)
+                    for (jInd in 0..rec.right)
                         if (pizza.plate[i + iInd][j + jInd] == PARTS.SELECTED) {
                             insert = false
                             break
@@ -156,12 +168,32 @@ class Slicer {
             val result = ArrayList<Rectangle>()
 
             possibleRectangles.forEach {
-                if (i + it.down < config.rows && j + it.right < config.colums)
+                if (i + it.down < config.rows && j + it.right < config.column)
                     result.add(it)
 
             }
 
             return result
+        }
+
+
+        private fun getAllValidSlicesFromCurrentPoint(
+            pizza: Pizza,
+            i: Int,
+            j: Int,
+            possibleRectangles: List<Rectangle>,
+            config: PizzaConfig
+        ): ArrayList<RectangleSelected> {
+            val validSlicesBySize = getAllValidSlicesByPizzaPlateSize(i, j, possibleRectangles, config)
+            val validSlicesNotContainingSelected =
+                getAllValidSlicesNotContainingSelected(pizza, i, j, validSlicesBySize)
+            return getAllValidSlicesContainingMinTaping(
+                pizza,
+                i,
+                j,
+                config.minIngredient,
+                validSlicesNotContainingSelected
+            )
         }
 
 

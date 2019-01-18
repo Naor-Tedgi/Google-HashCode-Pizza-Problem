@@ -6,24 +6,58 @@ import java.io.File
 enum class PARTS { TOMATO, MUSHROOM, SELECTED }
 
 
-data class PizzaConfig (val rows:Int,val colums:Int,val minIngredient:Int,val maxCellsPerSlice:Int)
+data class PizzaConfig(val rows: Int, val column: Int, val minIngredient: Int, val maxCellsPerSlice: Int)
 
 private data class PizzaFile(val config: String, val lines: ArrayList<String>)
 
-data class Pizza(val config: PizzaConfig ,val plate: ArrayList<Array<PARTS>>  )
+data class Pizza(val config: PizzaConfig, val plate: ArrayList<Array<PARTS>>) {
+
+
+    fun copy(): Pizza {
+        val newPlate = ArrayList<Array<PARTS>>()
+        plate.forEach {
+            newPlate.add(it.clone())
+        }
+        return Pizza(config, newPlate)
+
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is Pizza) return false
+        for (i in 0 until config.column)
+            for (j in 0 until config.rows) if (plate[j][i] != other.plate[j][i]) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return plate.hashCode()
+    }
+
+    fun toEmptyPizza() {
+        for (i in 0 until config.column)
+            for (j in 0 until config.rows)
+                plate[j][i] = PARTS.SELECTED
+    }
+
+    fun markSlice(rectangle: Rectangle, i: Int, j: Int) {
+        for (iInd in 0 .. rectangle.down)
+            for (jInd in 0 .. rectangle.right)
+                plate[i + iInd][j + jInd] = PARTS.SELECTED
+    }
+}
 
 class PizzaGenerator {
 
     companion object {
         fun create(input: String): Pizza {
             val pizzaFile = readPizzaFile(input)
-            return Pizza(createPizzaConfig(pizzaFile.config) , buildPizzaFromFile(pizzaFile))
+            return Pizza(createPizzaConfig(pizzaFile.config), buildPizzaFromFile(pizzaFile))
         }
 
         private fun createPizzaConfig(config: String): PizzaConfig {
-            val parts  = config.split(" ").map { it.toInt() }
-            if (parts.size!=4) throw IllegalArgumentException("config most be of size 4")
-            return PizzaConfig(parts[0],parts[1],parts[2],parts[3])
+            val parts = config.split(" ").map { it.toInt() }
+            if (parts.size != 4) throw IllegalArgumentException("config most be of size 4")
+            return PizzaConfig(parts[0], parts[1], parts[2], parts[3])
         }
 
 
