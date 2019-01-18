@@ -17,7 +17,7 @@ enum class INPUT(val PATH: String) {
 
 fun main(args: Array<String>) {
     path = getResourcesDir()
-    val input = INPUT.EXAMPLE.PATH
+    val input = INPUT.SMALL.PATH
     val pizza = PizzaGenerator.create(input)
     val pizzaGoal = pizza.copy()
     pizzaGoal.toEmptyPizza()

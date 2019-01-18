@@ -49,7 +49,7 @@ class Slicer {
                 val newPizza = pizza.copy()
                 newPizza.markSlice(it.rectangle, i, j)
                 val newChild = PizzaSliccerSearchNode(newPizza, getNextPoint(pizza, i, j, it.rectangle))
-                newChild.setG(it.sliceSize.toDouble())
+                newChild.setG(1/(it.sliceSize.toDouble()))
                 results.add(newChild)
             }
             return results
@@ -70,13 +70,6 @@ class Slicer {
         }
 
 
-        @Deprecated("remove this logic from slicer to solver")
-        private fun selectBestSlice(validSlices: ArrayList<RectangleSelected>): Int? {
-            val bigSlice = validSlices.map { it.sliceSize }.max()
-            val minMashroom = validSlices.map { it.mushroomCnt }.min()
-
-            return bigSlice
-        }
 
         private fun getAllValidSlicesContainingMinTaping(
             pizza: Pizza,
