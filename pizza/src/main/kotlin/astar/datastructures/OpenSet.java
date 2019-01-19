@@ -1,15 +1,15 @@
 package astar.datastructures;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.PriorityQueue;
 
 import astar.ISearchNode;
 
 public class OpenSet implements IOpenSet {
 	private PriorityQueue<ISearchNode> Q;
-	
 	public OpenSet(Comparator<ISearchNode> comp) {
-		Q = new PriorityQueue<ISearchNode>(1000, comp);
+		Q = new PriorityQueue<ISearchNode>(100000, comp);
     }
 
 	@Override

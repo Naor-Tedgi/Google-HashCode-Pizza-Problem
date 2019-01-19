@@ -11,8 +11,11 @@ data class PizzaConfig(val rows: Int, val column: Int, val minIngredient: Int, v
 private data class PizzaFile(val config: String, val lines: ArrayList<String>)
 
 data class Pizza(val config: PizzaConfig, val plate: ArrayList<Array<PARTS>>) {
-
-
+    private val code: Int;
+    init {
+        cureentCode++
+        code = cureentCode
+    }
     fun copy(): Pizza {
         val newPlate = ArrayList<Array<PARTS>>()
         plate.forEach {
@@ -30,7 +33,8 @@ data class Pizza(val config: PizzaConfig, val plate: ArrayList<Array<PARTS>>) {
     }
 
     override fun hashCode(): Int {
-        return plate.hashCode()
+
+        return code
     }
 
     fun toEmptyPizza() {
@@ -40,9 +44,14 @@ data class Pizza(val config: PizzaConfig, val plate: ArrayList<Array<PARTS>>) {
     }
 
     fun markSlice(rectangle: Rectangle, i: Int, j: Int) {
-        for (iInd in 0 .. rectangle.down)
-            for (jInd in 0 .. rectangle.right)
+
+        for (iInd in 0..rectangle.down)
+            for (jInd in 0..rectangle.right)
                 plate[i + iInd][j + jInd] = PARTS.SELECTED
+    }
+
+    companion object {
+        var cureentCode: Int = 0
     }
 }
 
